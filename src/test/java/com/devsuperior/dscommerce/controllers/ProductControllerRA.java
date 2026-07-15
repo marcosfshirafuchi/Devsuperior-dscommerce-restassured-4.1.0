@@ -1,11 +1,13 @@
 package com.devsuperior.dscommerce.controllers;
 
+import com.devsuperior.dscommerce.tests.TokenUtil;
 import io.restassured.http.ContentType;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.baseURI;
@@ -15,6 +17,8 @@ import static org.hamcrest.Matchers.*;
 
 public class ProductControllerRA {
 
+    private String clientUsername, clientPassword, adminUsername, adminPassword;
+    private String clientToken, adminToken, invalidToken;
     private Long existingProductId, nonExistingProductId;
     private String productName;
     //Chave é String e valor é Object
@@ -24,12 +28,36 @@ public class ProductControllerRA {
     public void sertUp() {
         //Endereço que vai estar hospedado o serviço
         baseURI = "http://localhost:8080";
+
+        clientUsername = "maria@gmail.com";
+        clientPassword = "123456";
+        adminUsername = "alex@gmail.com";
+        adminPassword = "123456";
+
+        clientToken = TokenUtil.obtainAccessToken(clientUsername, clientPassword);
+        adminToken = TokenUtil.obtainAccessToken(adminUsername, adminPassword);
+        invalidToken = adminToken + "xpto"; // Invalid Token
+
         productName = "Macbook";
         postProductInstance = new HashMap<>();
         postProductInstance.put("name", "Meu produto");
         postProductInstance.put("description", "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Qui ad, adipisci illum ipsam velit et odit eaque reprehenderit ex maxime delectus dolore labore, quisquam quae tempora natus esse aliquam veniam doloremque quam minima culpa alias maiores commodi. Perferendis enim");
         postProductInstance.put("imgUrl", "https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg");
         postProductInstance.put("price", 50.0);
+
+        //Criar uma lista de categorias
+        List<Map<String, Object>> categories = new ArrayList<>();
+
+        Map<String, Object> category1 = new HashMap<>();
+        category1.put("id",2);
+
+        Map<String, Object> category2 = new HashMap<>();
+        category2.put("id",3);
+
+        categories.add(category1);
+        categories.add(category2);
+
+        postProductInstance.put("categories", categories);
     }
 
     //Exercícios de fixação: Testes de API com MockMvc
@@ -44,7 +72,7 @@ public class ProductControllerRA {
     {
         "id": 2,
         "name": "Smart TV",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore e dolore",
         "price": 2190.0,
         "imgUrl": "https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/2-big.jpg",
         "categories": [
@@ -150,27 +178,27 @@ public class ProductControllerRA {
     @Test
     public void insertShouldReturnProductCreatedWhenAdminLogged(){
         //Criar o objeto JSON
-        JSONObject newProduct = new JSONObject(postProductInstance);
-        String adminToken = "";
+        // JSONObject newProduct = new JSONObject(postProductInstance); // Removido
 
         given()
            //Definindo o cabeçalho da requisição
            //Tipo da informação
            .header("Content-type","application/json")
            .header("Authorization","Bearer " + adminToken)
-           .body(newProduct)
+           .body(postProductInstance) // Passando o Map diretamente
            .contentType(ContentType.JSON)
            .accept(ContentType.JSON)
         .when()
            //Está passando o endpoint para testar
            .post("/products")
         .then()
+           .log().all() // Log all request and response details for debugging
            //Verificando a resposta da requisição
            .statusCode(201)
            .body("name", equalTo("Meu produto"))
            .body("price", is(50.0F))
            .body("imgUrl", equalTo("https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg"))
-           .body("categories", hasItems(2,3));
+           .body("categories.id", hasItems(2,3));
     }
 
     //2.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo name for inválido
