@@ -328,8 +328,47 @@ public class ProductControllerRA {
     }
 
     //7.	Inserção de produto retorna 403 quando logado como cliente
+    @Test
+    public void insertShouldReturnForbiddenWhenClientLogged() {
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
 
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type", "application/json")
+                .header("Authorization", "Bearer " + clientToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(403);
+    }
 
     //8.	Inserção de produto retorna 401 quando não logado como admin ou cliente
+    @Test
+    public void insertShouldReturnUnauthorizedWhenInvalidToken() {
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
+
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type", "application/json")
+                .header("Authorization", "Bearer " + invalidToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(401);
+    }
 
 }
