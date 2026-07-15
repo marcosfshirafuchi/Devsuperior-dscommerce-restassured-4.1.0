@@ -1,7 +1,12 @@
 package com.devsuperior.dscommerce.controllers;
 
+import io.restassured.http.ContentType;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
@@ -12,12 +17,19 @@ public class ProductControllerRA {
 
     private Long existingProductId, nonExistingProductId;
     private String productName;
+    //Chave é String e valor é Object
+    private Map<String, Object> postProductInstance;
 
     @BeforeEach
     public void sertUp() {
         //Endereço que vai estar hospedado o serviço
         baseURI = "http://localhost:8080";
         productName = "Macbook";
+        postProductInstance = new HashMap<>();
+        postProductInstance.put("name", "Meu produto");
+        postProductInstance.put("description", "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Qui ad, adipisci illum ipsam velit et odit eaque reprehenderit ex maxime delectus dolore labore, quisquam quae tempora natus esse aliquam veniam doloremque quam minima culpa alias maiores commodi. Perferendis enim");
+        postProductInstance.put("imgUrl", "https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg");
+        postProductInstance.put("price", 50.0);
     }
 
     //Exercícios de fixação: Testes de API com MockMvc
@@ -119,4 +131,66 @@ public class ProductControllerRA {
            //Verifica os nomes dos produtos com o preço maior que 2000.0
            .body("content.findAll {it.price > 2000}.name", hasItems("Smart TV", "PC Gamer Weed"));
     }
+
+        /*Problema 3: Inserir produto
+
+    Implemente os testes de API usando Rest Assured para inserção de produto (método POST do ProductController), considerando os seguintes cenários. Lembre-se de inserir o token no cabeçalho da requisição.
+    1.	Inserção de produto insere produto com dados válidos quando logado como admin
+    2.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo name for inválido
+    3.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo description for inválido
+    4.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo price for negativo
+    5.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo price for zero
+    6.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e não tiver categoria associada
+    7.	Inserção de produto retorna 403 quando logado como cliente
+    8.	Inserção de produto retorna 401 quando não logado como admin ou cliente
+
+    * */
+
+    //1.	Inserção de produto insere produto com dados válidos quando logado como admin
+    @Test
+    public void insertShouldReturnProductCreatedWhenAdminLogged(){
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
+        String adminToken = "";
+
+        given()
+           //Definindo o cabeçalho da requisição
+           //Tipo da informação
+           .header("Content-type","application/json")
+           .header("Authorization","Bearer " + adminToken)
+           .body(newProduct)
+           .contentType(ContentType.JSON)
+           .accept(ContentType.JSON)
+        .when()
+           //Está passando o endpoint para testar
+           .post("/products")
+        .then()
+           //Verificando a resposta da requisição
+           .statusCode(201)
+           .body("name", equalTo("Meu produto"))
+           .body("price", is(50.0F))
+           .body("imgUrl", equalTo("https://raw.githubusercontent.com/devsuperior/dscatalog-resources/master/backend/img/1-big.jpg"))
+           .body("categories", hasItems(2,3));
+    }
+
+    //2.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo name for inválido
+
+
+    //3.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo description for inválido
+
+
+    //4.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo price for negativo
+
+
+    //5.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo price for zero
+
+
+    //6.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e não tiver categoria associada
+
+
+    //7.	Inserção de produto retorna 403 quando logado como cliente
+
+
+    //8.	Inserção de produto retorna 401 quando não logado como admin ou cliente
+
 }
