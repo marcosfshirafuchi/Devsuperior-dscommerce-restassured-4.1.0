@@ -2,6 +2,7 @@ package com.devsuperior.dscommerce.controllers;
 
 import com.devsuperior.dscommerce.tests.TokenUtil;
 import io.restassured.http.ContentType;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -202,19 +203,129 @@ public class ProductControllerRA {
     }
 
     //2.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo name for inválido
+    @Test
+    public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidName(){
+        postProductInstance.put("name","ab");
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
 
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type","application/json")
+                .header("Authorization","Bearer " + adminToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(422)
+                //Mensagem de erro no Postman
+                .body("errors.message[0]", equalTo("Nome precisar ter de 3 a 80 caracteres"));
+    }
 
     //3.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo description for inválido
+    @Test
+    public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndInvalidDescription(){
+        postProductInstance.put("description","ab");
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
 
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type","application/json")
+                .header("Authorization","Bearer " + adminToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(422)
+                //Mensagem de erro no Postman
+                .body("errors.message[0]", equalTo("Descrição precisa ter no mínimo 10 caracteres"));
+    }
 
     //4.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo price for negativo
+    @Test
+    public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndPriceIsNegative(){
+        postProductInstance.put("price", -50.0);
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
 
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type","application/json")
+                .header("Authorization","Bearer " + adminToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(422)
+                //Mensagem de erro no Postman
+                .body("errors.message[0]", equalTo("O preço deve ser positivo"));
+    }
 
     //5.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e campo price for zero
+    @Test
+    public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndPriceIsZero(){
+        postProductInstance.put("price", 0);
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
 
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type","application/json")
+                .header("Authorization","Bearer " + adminToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(422)
+                //Mensagem de erro no Postman
+                .body("errors.message[0]", equalTo("O preço deve ser positivo"));
+    }
 
     //6.	Inserção de produto retorna 422 e mensagens customizadas com dados inválidos quando logado como admin e não tiver categoria associada
+    @Test
+    public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndProductHasNotCategory(){
+        postProductInstance.put("categories", null);
+        //Criar o objeto JSON
+        JSONObject newProduct = new JSONObject(postProductInstance);
 
+        given()
+                //Definindo o cabeçalho da requisição
+                //Tipo da informação
+                .header("Content-type","application/json")
+                .header("Authorization","Bearer " + adminToken)
+                .body(newProduct.toString())
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .when()
+                //Está passando o endpoint para testar
+                .post("/products")
+                .then()
+                //Verificando a resposta da requisição
+                .statusCode(422)
+                //Mensagem de erro no Postman
+                .body("errors.message[0]", equalTo("Deve ter pelo menos uma categoria"));
+    }
 
     //7.	Inserção de produto retorna 403 quando logado como cliente
 
